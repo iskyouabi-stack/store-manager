@@ -24,11 +24,15 @@ button.g{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}button.
 .tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--bd)}
 .low{color:var(--warn);border-color:var(--warn)}.out{color:var(--bad);border-color:var(--bad)}
 .pos{color:var(--pr)}.neg{color:var(--bad)}
+.btn{display:block;text-align:center;text-decoration:none;border-radius:10px;padding:12px;margin-top:10px;background:var(--pr);color:#fff;font-size:15px}.btn.g{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}
+.plan{cursor:pointer}.plan.sel{border-color:var(--pr);box-shadow:0 0 0 2px var(--pr) inset}
+.bn{padding:10px 12px;border-radius:12px;margin-bottom:10px;font-size:14px;cursor:pointer;border:1px solid var(--bd);background:var(--card)}.bn.pro{border-color:var(--pr);color:var(--pr)}.bn.trial{border-color:var(--warn)}
 .hide{display:none}
 </style>
 </head>
 <body>
 <h1>🏪 مدير المتجر</h1>
+<div id="bn" class="bn" onclick="tab('plan',document.querySelectorAll('.tabs button')[2])"></div>
 
 <section id="t-sum">
   <div class="grid">
@@ -59,9 +63,31 @@ button.g{background:var(--bg);color:var(--tx);border:1px solid var(--bd)}button.
   <div id="list"></div>
 </section>
 
+<section id="t-plan" class="hide">
+  <div class="card"><b>اختر خطتك</b>
+    <div class="mut" style="margin:4px 0 10px">تجربة مجانية أسبوع كامل. بعدها نسخة مجانية (حتى 10 منتجات) أو Pro بلا حدود.</div>
+    <div id="plans"></div>
+    <div class="mut">Pro: منتجات غير محدودة · دعم مباشر عبر واتساب · كل التحديثات القادمة</div></div>
+  <div class="card"><b>1) الدفع بالعملات الرقمية</b>
+    <div class="mut" style="margin-top:4px">الخطة المختارة: <b id="pp"></b></div>
+    <div id="wl"></div>
+    <div class="mut" style="margin-top:8px">⚠️ تأكد من الشبكة (BEP20 لعملة USDT) قبل التحويل.</div>
+    <a id="wa1" class="btn" target="_blank" rel="noopener">2) أرسل إثبات الدفع عبر واتساب</a></div>
+  <div class="card"><b>الدفع عبر شام كاش</b>
+    <div class="mut" style="margin-top:4px">تواصل معنا على واتساب ونرتّب لك الدفع والتفعيل.</div>
+    <a id="wa2" class="btn g" target="_blank" rel="noopener">تواصل لدفع شام كاش</a></div>
+  <div class="card"><b>3) كود التفعيل</b>
+    <div class="mut" style="margin:4px 0 8px">بعد التأكد من دفعك نرسل لك كودًا عبر واتساب. أدخله هنا.</div>
+    <div class="row"><input id="code" placeholder="PRO-XXXX-XXXX" style="direction:ltr;text-align:left"><button onclick="act()">تفعيل</button></div></div>
+  <div class="card"><b>خدمات إضافية</b>
+    <div class="mut" style="margin:4px 0">🛠 إعداد متجرك: نُدخل لك أول 20 منتجًا ونعلّمك الاستخدام، 10$ مرة واحدة.<br>🎁 شهر مجاني لك عن كل تاجر تدعوه ويشترك.</div>
+    <a id="wa3" class="btn g" target="_blank" rel="noopener">اطلب خدمة الإعداد</a></div>
+</section>
+
 <nav class="tabs">
   <button class="on" onclick="tab('sum',this)">الملخص</button>
   <button onclick="tab('prod',this)">المنتجات والبيع</button>
+  <button onclick="tab('plan',this)">⭐ الاشتراك</button>
 </nav>
 
 <script>
@@ -71,12 +97,13 @@ function sv(){try{localStorage.setItem('sm_p',JSON.stringify(P));localStorage.se
 var $=function(i){return document.getElementById(i)};
 function f(x){return (Math.round(x*100)/100).toLocaleString('en-US')}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function tab(t,btn){['sum','prod'].forEach(function(x){$('t-'+x).classList.toggle('hide',x!==t)});document.querySelectorAll('.tabs button').forEach(function(b){b.classList.toggle('on',b===btn)});draw()}
+function tab(t,btn){['sum','prod','plan'].forEach(function(x){$('t-'+x).classList.toggle('hide',x!==t)});document.querySelectorAll('.tabs button').forEach(function(b){b.classList.toggle('on',b===btn)});draw()}
 function prev(){var q=+$('q').value,b=+$('b').value,p=+$('p').value;if(q>0&&b>=0){var u=b/q;$('prev').innerHTML='تكلفة الوحدة: <b>'+f(u)+'</b>'+(p>0?' · الربح للوحدة: <b class="'+(p>=u?'pos':'neg')+'">'+f(p-u)+'</b> · ربح الكمية كاملة: <b>'+f((p-u)*q)+'</b>':'')}else $('prev').textContent=''}
 ['q','b','p'].forEach(function(i){$(i).addEventListener('input',prev)});
 function reset(){E=null;['n','q','b','p'].forEach(function(i){$(i).value=''});$('l').value=3;$('ftitle').textContent='إضافة منتج';prev()}
 function save(){var n=$('n').value.trim(),q=+$('q').value,b=+$('b').value,p=+$('p').value,l=+$('l').value||0;
  if(!n||!(q>=0)||!(b>=0)||!(p>=0)||$('q').value===''||$('b').value===''||$('p').value===''){alert('أكمل الاسم والكمية والأسعار');return}
+ if(!E&&st().k==='free'&&P.length>=CFG.free){alert('وصلت حد النسخة المجانية ('+CFG.free+' منتجات). اشترك للإضافة بلا حدود');tab('plan',document.querySelectorAll('.tabs button')[2]);return}
  var u=q>0?b/q:0;
  if(E){var x=P.find(function(a){return a.id===E});x.n=n;x.q=q;x.u=u;x.p=p;x.l=l}
  else P.push({id:Date.now(),n:n,q:q,u:u,p:p,l:l});
@@ -103,7 +130,31 @@ function draw(){
  $('sales').innerHTML=S.slice(0,8).map(function(x){return '<div class="row sp" style="padding:5px 0;border-bottom:1px solid var(--bd)"><span>'+esc(x.n)+' × '+x.q+'</span><span class="mut">'+f(x.r)+' · <span class="pos">+'+f(x.g)+'</span></span></div>'}).join('')||'<span class="mut">لا مبيعات بعد</span>'}
 function exp(){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({P:P,S:S})],{type:'application/json'}));a.download='store-backup.json';a.click()}
 function imp(e){var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);P=o.P||[];S=o.S||[];sv();draw()}catch(x){alert('ملف غير صالح')}};if(e.target.files[0])r.readAsText(e.target.files[0])}
-ld();draw();
+/* ===== الإعدادات: عدّلها هنا ===== */
+var CFG={wa:'963991589268',name:'مدير المتجر',trial:7,free:10,
+wallets:[['USDT (BEP20)','0x07695452c7679953A0e47d20249d243E09362c74'],['BTC','bc1q3gej2fw50qrd7zczx8h7mz2r7d3tulnpctdpwl']],
+plans:[{t:'شهر',d:30,p:4,g:''},{t:'3 أشهر',d:90,p:10,g:'وفّر 17%'},{t:'سنة',d:365,p:36,g:'الأفضل · وفّر 25%'}],
+codes:{'PRO-M1-HK53-AU8F':30,'PRO-M1-7SUX-H6B4':30,'PRO-M1-VUPZ-LKW9':30,'PRO-M1-CHT9-DUTU':30,'PRO-M1-5B6E-NLDM':30,'PRO-M1-VE32-7YEC':30,'PRO-M1-TW2T-HNQE':30,'PRO-M1-CCNG-JRHJ':30,'PRO-M1-4VBE-Y7E3':30,'PRO-M1-D2YR-X67P':30,'PRO-M1-UQFR-6RQE':30,'PRO-M1-Q4SF-QL72':30,'PRO-M1-MKMV-EEHY':30,'PRO-M1-GP9S-X483':30,'PRO-M1-FDXG-W5MQ':30,'PRO-M3-ST6C-LD3X':90,'PRO-M3-6T49-DCLB':90,'PRO-M3-EYKT-L7JH':90,'PRO-M3-4ZJU-MJ5H':90,'PRO-M3-YAC7-FGB4':90,'PRO-M3-5TJA-9EKH':90,'PRO-M3-MQJN-2WF7':90,'PRO-M3-FTA5-6658':90,'PRO-M3-BXNG-CQ88':90,'PRO-M3-5FDB-LJYG':90,'PRO-Y1-A542-6X9Z':365,'PRO-Y1-A43R-KGZ5':365,'PRO-Y1-S8HG-EEX7':365,'PRO-Y1-BHR5-7HSZ':365,'PRO-Y1-4XB6-5HNG':365}};
+var A={},SP=1;
+function sa(){try{localStorage.setItem('sm_a',JSON.stringify(A))}catch(e){}}
+function la(){try{A=JSON.parse(localStorage.getItem('sm_a')||'{}')}catch(e){A={}}if(!A.ts){A.ts=Date.now();sa()}}
+function st(){var n=Date.now();if(A.pu&&A.pu>n)return{k:'pro',d:Math.ceil((A.pu-n)/864e5)};var t=A.ts+CFG.trial*864e5;if(t>n)return{k:'trial',d:Math.ceil((t-n)/864e5)};return{k:'free',d:0}}
+function bn(){var s=st(),b=$('bn');b.className='bn '+s.k;b.textContent=s.k==='pro'?'✅ اشتراك Pro فعّال — متبقي '+s.d+' يوم':s.k==='trial'?'🎁 تجربة مجانية كاملة — متبقي '+s.d+' يوم. اضغط للاشتراك':'النسخة المجانية: حتى '+CFG.free+' منتجات. اضغط للاشتراك'}
+function wa(m){return 'https://wa.me/'+CFG.wa+'?text='+encodeURIComponent(m)}
+function cp(i){var e=$('w'+i);e.select();try{navigator.clipboard.writeText(e.value)}catch(x){try{document.execCommand('copy')}catch(y){}}}
+function rp(){var p=CFG.plans[SP];
+ $('plans').innerHTML=CFG.plans.map(function(a,i){return '<div class="card plan'+(i===SP?' sel':'')+'" onclick="SP='+i+';rp()"><div class="row sp"><b>'+a.t+'</b>'+(a.g?'<span class="tag">'+a.g+'</span>':'')+'</div><div style="font-size:22px;margin-top:4px"><b>$'+a.p+'</b></div></div>'}).join('');
+ $('wl').innerHTML=CFG.wallets.map(function(w,i){return '<label>'+w[0]+'</label><div class="row"><input readonly value="'+w[1]+'" id="w'+i+'" style="direction:ltr;text-align:left"><button class="g" onclick="cp('+i+')">نسخ</button></div>'}).join('');
+ $('pp').textContent=p.t+' — $'+p.p;
+ $('wa1').href=wa('مرحبًا، أريد الاشتراك في '+CFG.name+' (خطة '+p.t+' - $'+p.p+'). دفعت بالعملات الرقمية وهذا إثبات الدفع:');
+ $('wa2').href=wa('مرحبًا، أريد الاشتراك في '+CFG.name+' (خطة '+p.t+' - $'+p.p+') وأفضّل الدفع عبر شام كاش.');
+ $('wa3').href=wa('مرحبًا، أريد خدمة إعداد المتجر في '+CFG.name+'.')}
+function act(){var c=$('code').value.trim().toUpperCase(),d=CFG.codes[c];A.u=A.u||[];
+ if(!d){alert('الكود غير صحيح');return}
+ if(A.u.indexOf(c)>-1){alert('هذا الكود مستخدم على هذا الجهاز');return}
+ A.pu=Math.max(Date.now(),A.pu||0)+d*864e5;A.u.push(c);sa();$('code').value='';bn();alert('تم تفعيل Pro لمدة '+d+' يوم 🎉')}
+var _d=draw;draw=function(){_d();bn()};
+ld();la();draw();rp();
 </script>
 </body>
 </html>
